@@ -5,6 +5,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/storage";
 import { User } from "@/lib/types";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -34,6 +35,7 @@ const availabilityLabel: Record<string, string> = {
 
 export default function Home() {
   const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [jobDescription, setJobDescription] = useState("");
@@ -45,71 +47,67 @@ export default function Home() {
 
   useEffect(() => {
     const saved = getUser();
-    if (!saved) {
-      router.push("/me");
-      return;
+    if (saved) {
+      setUser(saved);
+      setApiKey(saved.GroqAPI ?? "");
     }
-    setUser(saved);
-    setApiKey(saved.GroqAPI ?? "");
   }, []);
 
   const buildPrompt = () => {
     if (!user) return "";
 
     return `
-You are helping a job seeker write a cold email to someone at a company — either asking for a referral, expressing interest in an open role, or requesting an intro call.
+You are helping a job seeker write a cold email to someone at a company.
 
-The email is written FROM the candidate TO a person at the company (recruiter, engineer, hiring manager, etc.).
-The candidate is NOT a recruiter. They are a job seeker reaching out for an opportunity or referral.
-Do NOT write it as if the candidate is hiring someone. Do NOT write it as if the candidate is a recruiter.
-
----
-
-Candidate (the person writing the email):
+Candidate:
 Name: ${user.name}
 Email: ${user.email}
 Primary Role: ${user.primary_role || "Software Engineer"}
 Location: ${user.location || "Not specified"}
 Can start: ${availabilityLabel[user.availability || "immediate"]}
 
-What they're looking for:
-${user.roles_looking_for
-  .map(
-    (r) =>
-      `- Role: ${r.name}
-  Skills: ${r.skills.join(", ")}
-  Projects: ${r.projects?.join(", ") || "N/A"}
-  Notable: ${r.mentions || "N/A"}`,
-  )
-  .join("\n")}
+Roles looking for:
+${
+  user.roles_looking_for
+    ?.map(
+      (r) =>
+        `- ${r.name}
+Skills: ${r.skills.join(", ")}
+Projects: ${r.projects?.join(", ") || "N/A"}
+Notable: ${r.mentions || "N/A"}`,
+    )
+    .join("\n") || "N/A"
+}
 
-Past Experience:
-${user.experience
-  .map(
-    (e) =>
-      `- ${e.role} at ${e.company} (${e.duration})${
-        e.description ? ": " + e.description : ""
-      }`,
-  )
-  .join("\n")}
+Experience:
+${
+  user.experience
+    ?.map(
+      (e) =>
+        `- ${e.role} at ${e.company} (${e.duration})${
+          e.description ? ": " + e.description : ""
+        }`,
+    )
+    .join("\n") || "N/A"
+}
 
-Key proof points / achievements:
+Proof points:
 ${user.proof_points?.join("\n") || "N/A"}
 
 Resume summary:
-${user.resume_text}
+${user.resume_text || "N/A"}
 
 Links:
 LinkedIn: ${user.linkedin_url || "N/A"}
 GitHub: ${user.github_url || "N/A"}
 Portfolio: ${user.portfolio_url || "N/A"}
 
-Additional notes from candidate:
+Additional notes:
 ${user.custom_prompt || "None"}
 
 ---
 
-Job Description / Company they're reaching out to:
+Job Description:
 ${jobDescription}
 
 ---
@@ -117,23 +115,36 @@ ${jobDescription}
 Instructions:
 ${templates[selectedTemplate]}
 
-Generate exactly 3 clearly separated email versions. Label them "Version 1", "Version 2", "Version 3".
-Each should have a Subject line and full email body.
-Make them natural, human, and specific to this job description and company.
-Each version should feel distinct — vary the opening hook, tone, and CTA.
-Do NOT sound generic. Do NOT use filler phrases like "I hope this email finds you well."
-The candidate is reaching out asking for an opportunity or referral — NOT offering one.
-Keep each email under 200 words.
+Generate exactly 3 clearly separated email versions.
+Label them Version 1, Version 2, Version 3.
+Each under 200 words.
 `;
   };
 
   const generateColdMails = async () => {
-    if (!apiKey || !jobDescription || !user) return;
+    if (!user || !apiKey) {
+      toast("Profile incomplete", {
+        description: "Please edit your profile before generating cold emails.",
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo"),
+        },
+        style: {
+          background: "orange",
+          border:"black"
+        },
+      });
+      return;
+    }
+
+    if (!apiKey || !jobDescription) return;
+
     setLoading(true);
     setResponses([]);
 
     try {
       const prompt = buildPrompt();
+
       const res = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
         {
@@ -151,7 +162,6 @@ Keep each email under 200 words.
 
       const text: string = res.data.choices[0].message.content;
 
-      // Split on Version 1 / Version 2 / Version 3 markers
       const versionRegex = /Version\s+[123][:\.\-]?\s*/gi;
       const parts = text.split(versionRegex).filter((s) => s.trim().length > 0);
       const versions = parts.slice(0, 3);
@@ -163,7 +173,9 @@ Keep each email under 200 words.
       );
     } catch (err) {
       console.error(err);
-      alert("Generation failed. Check your API key.");
+      toast("Generation failed",{
+        description: "Check your API key.",
+      });
     }
 
     setLoading(false);
@@ -175,31 +187,40 @@ Keep each email under 200 words.
     setTimeout(() => setCopied(null), 2000);
   };
 
-  if (!user) return null;
-
   return (
-    <main
-      className={`min-h-screen w-full bg-[#0e0e0e] text-[#e8e6e0] font-mono flex flex-col items-center px-6 ${responses.length > 0 ? "justify-start py-12" : "justify-center py-12"}`}
-    >
-      <div className="w-full max-w-2xl space-y-6">
-        {/* Title block */}
+    <main className="min-h-screen w-full bg-[#0e0e0e] text-[#e8e6e0] font-mono flex flex-col  justify-center items-center px-6 py-12">
+      <div className="w-full max-w-xl space-y-6">
+        {/* Title */}
         <div className="flex items-baseline justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white">
               c<span className="text-[#f5a623]">.mail</span>
             </h1>
             <p className="text-xs text-[#888] mt-0.5">
-              generating for <span className="text-[#f5a623]">{user.name}</span>
+              {user ? `generating for ${user.name}` : "no profile loaded"}
             </p>
           </div>
+
           <button
             onClick={() => router.push("/me")}
-            className="text-xs text-gray-300 hover:text-[#aaa] transition-colors underline underline-offset-2"
+            className="text-xs text-gray-300 hover:text-[#aaa] underline underline-offset-2"
           >
             edit profile →
           </button>
         </div>
-        {/* API Key */}
+
+        {/* If no user show helper box */}
+        {/* {!user && (
+          <div className="border border-[#2a2a2a] bg-[#111] p-4 text-sm text-[#888]">
+            No profile found.
+            <button
+              onClick={() => router.push("/me")}
+              className="text-[#f5a623] underline ml-1"
+            >
+              Create one →
+            </button>
+          </div>
+        )} */}
 
         {/* Job Description */}
         <div className="space-y-1.5">
@@ -207,12 +228,11 @@ Keep each email under 200 words.
             Job Description / Company Context
           </label>
           <Textarea
-            placeholder="Paste the job description, LinkedIn post, or just describe the company and role you're targeting..."
+            placeholder="Paste job description..."
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             rows={8}
-            style={{ color: "#e8e6e0", backgroundColor: "#161616" }}
-            className="w-full border border-[#2a2a2a] px-3 py-2.5 font-mono text-sm placeholder:text-[#444] focus:border-[#f5a623] focus:outline-none resize-y"
+            className="w-full border border-[#2a2a2a] bg-[#161616] px-3 py-2.5 text-sm placeholder:text-[#444] focus:border-[#f5a623] focus:outline-none resize-y"
           />
         </div>
 
@@ -222,10 +242,10 @@ Keep each email under 200 words.
             value={selectedTemplate}
             onValueChange={(v) => setSelectedTemplate(v as TemplateType)}
           >
-            <SelectTrigger className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm rounded-none h-10 w-44 focus:ring-0 focus:outline-none focus:border-[#f5a623]">
+            <SelectTrigger className="bg-[#161616] border-[#2a2a2a] text-white text-sm rounded-none h-10 w-44 focus:border-[#f5a623]">
               <SelectValue placeholder="Style" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white font-mono rounded-none">
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white rounded-none">
               <SelectItem value="concise">Concise</SelectItem>
               <SelectItem value="technical">Technical</SelectItem>
               <SelectItem value="story">Story Driven</SelectItem>
@@ -235,63 +255,30 @@ Keep each email under 200 words.
 
           <Button
             onClick={generateColdMails}
-            disabled={loading || !apiKey || !jobDescription}
-            className="flex-1 h-10 rounded-none bg-[#f5a623] hover:bg-[#e09510] text-black font-bold text-sm tracking-wider uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={loading  || !jobDescription }
+            className="flex-1 h-10 rounded-none bg-[#f5a623] hover:bg-[#e09510] text-black font-bold text-sm uppercase disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg
-                  className="animate-spin h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  />
-                </svg>
-                Generating...
-              </span>
-            ) : (
-              "Generate 3 ColdMails →"
-            )}
+            {loading ? "Generating..." : "Generate 3 ColdMails →"}
           </Button>
         </div>
 
         {/* Results */}
         {responses.length > 0 && (
           <div className="space-y-4 pt-4 border-t border-[#2a2a2a]">
-            <p className="text-xs text-[#888] uppercase tracking-widest">
-              Generated Emails
-            </p>
             {responses.map((res, i) => (
               <div key={i} className="border border-[#2a2a2a] bg-[#111]">
-                {/* Card header */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-[#2a2a2a] bg-[#181818]">
-                  <span className="text-xs text-[#f5a623] font-bold uppercase tracking-widest">
+                <div className="flex justify-between px-4 py-2 border-b border-[#2a2a2a] bg-[#181818]">
+                  <span className="text-xs text-[#f5a623] font-bold uppercase">
                     Version {i + 1}
                   </span>
                   <button
                     onClick={() => copyToClipboard(res, i)}
-                    className="text-xs text-[#888] hover:text-white transition-colors"
+                    className="text-xs text-[#888] hover:text-white"
                   >
                     {copied === i ? "✓ copied" : "copy"}
                   </button>
                 </div>
-                {/* Email body */}
-                <pre
-                  style={{ color: "#e8e6e0" }}
-                  className="px-5 py-4 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed overflow-auto max-h-[520px]"
-                >
+                <pre className="px-5 py-4 text-sm whitespace-pre-wrap break-words leading-relaxed max-h-[520px] overflow-auto">
                   {res.trim()}
                 </pre>
               </div>
