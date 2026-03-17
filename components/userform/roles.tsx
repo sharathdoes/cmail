@@ -33,12 +33,12 @@ const Roles = () => {
   }, [reset]);
 
   return (
-    <div className="p-5 space-y-4 bg-[#111] border border-[#2a2a2a]">
+    <div style={styles.container}>
       <div>
-        <h1 className="text-lg font-bold text-white tracking-tight">
+        <h1 style={styles.title}>
           Roles looking for
         </h1>
-        <p className="text-[10px] text-[#888] uppercase tracking-widest mt-0.5">
+        <p style={styles.subtitle}>
           Add the roles you're interested in
         </p>
       </div>
@@ -69,16 +69,15 @@ const Roles = () => {
         return (
           <div
             key={field.id}
-            className="space-y-3 border border-[#2a2a2a] p-4 bg-[#0e0e0e]"
+            style={styles.roleCard}
           >
             <Input
               placeholder="Role Name"
               {...register(`roles_looking_for.${index}.name`)}
-              className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm h-9 focus:border-[#f5a623] focus:ring-0"
+              style={styles.input}
             />
 
-            {/* Skills */}
-            <div className="space-y-2">
+            <div style={styles.skillsSection}>
               <Input
                 placeholder="Enter skill and press Enter"
                 value={draft}
@@ -94,21 +93,19 @@ const Roles = () => {
                     addSkill();
                   }
                 }}
-                className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm h-9 focus:border-[#f5a623] focus:ring-0"
+                style={styles.input}
               />
 
-              <div className="flex flex-wrap gap-1.5">
+              <div style={styles.skillTags}>
                 {skills.map((skill, i) => (
                   <div
                     key={`${field.id}-skill-${i}`}
-                    className="inline-flex items-center gap-1.5 border border-[#2a2a2a] px-2 py-0.5 text-[10px] text-[#aaa] uppercase tracking-wide bg-[#0e0e0e]"
+                    style={styles.skillTag}
                   >
                     {skill}
                     <Button
                       type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="h-4 w-4 hover:text-[#f5a623] hover:bg-transparent p-0"
+                      style={styles.skillRemoveButton}
                       onClick={() => removeSkill(i)}
                     >
                       <X size={10} />
@@ -121,14 +118,13 @@ const Roles = () => {
             <Textarea
               placeholder="Mentions / Projects"
               {...register(`roles_looking_for.${index}.mentions`)}
-              className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm focus:border-[#f5a623] focus:ring-0 min-h-[60px]"
+              style={styles.textarea}
             />
-            <div className="flex justify-end">
+            <div style={styles.removeButtonContainer}>
               <Button
                 type="button"
-                variant="destructive"
+                style={styles.removeButton}
                 onClick={() => remove(index)}
-                className="bg-red-600 hover:bg-red-700 text-white text-[10px] uppercase tracking-widest h-8 px-3"
               >
                 Remove
               </Button>
@@ -139,7 +135,7 @@ const Roles = () => {
 
       <Button
         type="button"
-        className="w-full h-9 bg-[#f5a623] hover:bg-[#e09510] text-black font-bold text-xs tracking-widest uppercase"
+        style={styles.addButton}
         onClick={() =>
           append({
             name: "",
@@ -149,10 +145,125 @@ const Roles = () => {
           })
         }
       >
-        Add Role <Plus size={14} className="ml-1.5" />
+        Add Role <Plus size={14} style={{ marginLeft: '6px' }} />
       </Button>
     </div>
   );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    backgroundColor: '#111',
+    border: '1px solid #2a2a2a',
+  },
+  title: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: 'white',
+    letterSpacing: '-0.02em',
+  },
+  subtitle: {
+    fontSize: '10px',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginTop: '4px',
+  },
+  roleCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    border: '1px solid #2a2a2a',
+    padding: '16px',
+    backgroundColor: '#0e0e0e',
+  },
+  input: {
+    backgroundColor: '#161616',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    height: '36px',
+    padding: '8px 12px',
+  },
+  skillsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  skillTags: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+  },
+  skillTag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    border: '1px solid #2a2a2a',
+    padding: '4px 8px',
+    fontSize: '10px',
+    color: '#aaa',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    backgroundColor: '#0e0e0e',
+  },
+  skillRemoveButton: {
+    height: '16px',
+    width: '16px',
+    padding: 0,
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#888',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textarea: {
+    backgroundColor: '#161616',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    padding: '8px 12px',
+    minHeight: '60px',
+    resize: 'vertical',
+  },
+  removeButtonContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+  removeButton: {
+    backgroundColor: '#dc2626',
+    color: 'white',
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    height: '32px',
+    padding: '0 12px',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  addButton: {
+    width: '100%',
+    height: '36px',
+    backgroundColor: '#f5a623',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 };
 
 export default Roles;

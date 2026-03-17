@@ -77,8 +77,8 @@ const FormContainer = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
-        <div className="text-[#888] font-mono text-sm">Loading...</div>
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingText}>Loading...</div>
       </div>
     );
   }
@@ -87,32 +87,31 @@ const FormContainer = () => {
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(onSubmit)}
-        className="min-h-screen bg-[#0e0e0e] text-[#e8e6e0] font-mono"
+        style={styles.form}
       >
-        <div className="min-h-screen flex items-center justify-center py-4 px-4">
-          <div className="flex flex-col gap-3 w-full max-w-2xl">
-            {/* Progress Header - Compact */}
-            <div className="flex items-center justify-between text-[10px] text-[#888] uppercase tracking-widest px-1">
+        <div style={styles.formContent}>
+          <div style={styles.formInner}>
+            <div style={styles.progressHeader}>
               <span>Step {step + 1}/5</span>
               <span>{Math.round(((step + 1) / 5) * 100)}%</span>
             </div>
 
-            {/* Progress Bar - Compact */}
-            <div className="px-1">
+            <div style={styles.progressContainer}>
               <ProgressDemo Step={step} />
             </div>
 
-            {/* Form Content - Scrollable if needed */}
-            <div className="max-h-[calc(100vh-220px)] overflow-y-auto">
+            <div style={styles.componentContainer}>
               <CurrentComponent />
             </div>
 
-            {/* Navigation Buttons - Compact */}
-            <div className="flex gap-2">
+            <div style={styles.buttonGroup}>
               <Button
                 type="button"
-                variant="secondary"
-                className="flex-1 h-9 bg-[#161616] border border-[#2a2a2a] text-white hover:bg-[#2a2a2a] font-bold text-xs tracking-widest uppercase transition-colors"
+                style={{
+                  ...styles.prevButton,
+                  opacity: step === 0 ? 0.4 : 1,
+                  cursor: step === 0 ? 'not-allowed' : 'pointer',
+                }}
                 onClick={() => setStep(Math.max(0, step - 1))}
                 disabled={step === 0}
               >
@@ -121,7 +120,11 @@ const FormContainer = () => {
 
               <Button
                 type="button"
-                className="flex-1 h-9 bg-[#f5a623] hover:bg-[#e09510] text-black font-bold text-xs tracking-widest uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  ...styles.nextButton,
+                  opacity: step === 4 ? 0.4 : 1,
+                  cursor: step === 4 ? 'not-allowed' : 'pointer',
+                }}
                 disabled={step === 4}
                 onClick={handleNext}
               >
@@ -133,6 +136,91 @@ const FormContainer = () => {
       </form>
     </FormProvider>
   );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  loadingContainer: {
+    minHeight: '100vh',
+    backgroundColor: '#0e0e0e',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#888',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+  },
+  form: {
+    minHeight: '100vh',
+    backgroundColor: '#0e0e0e',
+    color: '#e8e6e0',
+    fontFamily: 'monospace',
+  },
+  formContent: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: '16px',
+    paddingBottom: '16px',
+    paddingLeft: '16px',
+    paddingRight: '16px',
+  },
+  formInner: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    width: '100%',
+    maxWidth: '56rem',
+  },
+  progressHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    fontSize: '10px',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    paddingLeft: '4px',
+    paddingRight: '4px',
+  },
+  progressContainer: {
+    paddingLeft: '4px',
+    paddingRight: '4px',
+  },
+  componentContainer: {
+    maxHeight: 'calc(100vh - 220px)',
+    overflowY: 'auto',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '8px',
+  },
+  prevButton: {
+    flex: 1,
+    height: '36px',
+    backgroundColor: '#161616',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    cursor: 'pointer',
+  },
+  nextButton: {
+    flex: 1,
+    height: '36px',
+    backgroundColor: '#f5a623',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    border: 'none',
+    cursor: 'pointer',
+  },
 };
 
 export default FormContainer;

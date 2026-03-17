@@ -26,8 +26,17 @@ export default function YouPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center ">
+    <div style={styles.container}>
       <ProfileBento user={user} onEdit={() => setIsEditing(true)} />
     </div>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+};

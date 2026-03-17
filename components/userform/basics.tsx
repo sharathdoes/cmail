@@ -31,39 +31,39 @@ const Basics = () => {
     : "Select availability";
 
   return (
-    <div className="px-5 py-4 bg-[#111] border border-[#2a2a2a]">
-      <div className="mb-4">
-        <h1 className="text-lg font-bold text-white tracking-tight">
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <h1 style={styles.title}>
           Let's start with the basics
         </h1>
-        <h2 className="text-[10px] text-[#888] uppercase tracking-widest mt-0.5">
+        <h2 style={styles.subtitle}>
           Tell us who you are and your details
         </h2>
       </div>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-[#888] uppercase tracking-widest">
+      <div style={styles.formFields}>
+        <div style={styles.field}>
+          <label style={styles.label}>
             Full Name
           </label>
           <Input
             {...register("name")}
             placeholder={savedUser?.name || "Full name"}
-            className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm h-9 focus:border-[#f5a623] focus:ring-0"
+            style={styles.input}
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-[#888] uppercase tracking-widest">
+        <div style={styles.field}>
+          <label style={styles.label}>
             Email Address
           </label>
           <Input
             type="email"
             {...register("email")}
             placeholder={savedUser?.email || "Email address"}
-            className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm h-9 focus:border-[#f5a623] focus:ring-0"
+            style={styles.input}
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-[#888] uppercase tracking-widest">
+        <div style={styles.field}>
+          <label style={styles.label}>
             Availability
           </label>
           <Controller
@@ -71,10 +71,10 @@ const Basics = () => {
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger className="bg-[#161616] border-[#2a2a2a] text-white font-mono text-sm h-9 focus:ring-0 focus:border-[#f5a623]">
+                <SelectTrigger style={styles.selectTrigger}>
                   <SelectValue placeholder={availabilityPlaceholder} />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white font-mono">
+                <SelectContent style={styles.selectContent}>
                   <SelectItem value="immediate">Immediate</SelectItem>
                   <SelectItem value="1_month">1 Month</SelectItem>
                   <SelectItem value="3_months">3 Months</SelectItem>
@@ -83,20 +83,74 @@ const Basics = () => {
             )}
           />
         </div>
-        {/* <div className="flex flex-col pt-1 gap-1.5">
-          <div className="border border-[#2a2a2a] bg-[#0e0e0e]">
-            <div className="px-4 py-2 border-b border-[#2a2a2a]">
-              <h3 className="text-xs font-bold text-white">Upload Resume</h3>
-            
-            </div>
-            <div className="px-4">
-              <FileUploadDemo />
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    padding: '20px',
+    backgroundColor: '#111',
+    border: '1px solid #2a2a2a',
+  },
+  header: {
+    marginBottom: '16px',
+  },
+  title: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: 'white',
+    letterSpacing: '-0.02em',
+  },
+  subtitle: {
+    fontSize: '10px',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginTop: '4px',
+  },
+  formFields: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  label: {
+    fontSize: '10px',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  input: {
+    backgroundColor: '#161616',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    height: '36px',
+    padding: '8px 12px',
+  },
+  selectTrigger: {
+    backgroundColor: '#161616',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    height: '36px',
+    borderRadius: 0,
+  },
+  selectContent: {
+    backgroundColor: '#1a1a1a',
+    border: '1px solid #2a2a2a',
+    color: 'white',
+    fontFamily: 'monospace',
+    borderRadius: 0,
+  },
 };
 
 export default Basics;

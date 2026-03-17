@@ -125,14 +125,6 @@ Each under 200 words.
     if (!user || !apiKey) {
       toast("Profile incomplete", {
         description: "Please edit your profile before generating cold emails.",
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
-        style: {
-          background: "orange",
-          border:"black"
-        },
       });
       return;
     }
@@ -188,43 +180,26 @@ Each under 200 words.
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#0e0e0e] text-[#e8e6e0] font-mono flex flex-col  justify-center items-center px-6 py-12">
-      <div className="w-full max-w-xl space-y-6">
-        {/* Title */}
-        <div className="flex items-baseline justify-between">
+    <main style={styles.main}>
+      <div style={styles.container}>
+        <div style={styles.header}>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
-              c<span className="text-[#f5a623]">.mail</span>
-            </h1>
-            <p className="text-xs text-[#888] mt-0.5">
+            <h1 style={styles.title}>c<span style={styles.titleAccent}>.mail</span></h1>
+            <p style={styles.subtitle}>
               {user ? `generating for ${user.name}` : "no profile loaded"}
             </p>
           </div>
 
           <button
             onClick={() => router.push("/me")}
-            className="text-xs text-gray-300 hover:text-[#aaa] underline underline-offset-2"
+            style={styles.editButton}
           >
             edit profile →
           </button>
         </div>
 
-        {/* If no user show helper box */}
-        {/* {!user && (
-          <div className="border border-[#2a2a2a] bg-[#111] p-4 text-sm text-[#888]">
-            No profile found.
-            <button
-              onClick={() => router.push("/me")}
-              className="text-[#f5a623] underline ml-1"
-            >
-              Create one →
-            </button>
-          </div>
-        )} */}
-
-        {/* Job Description */}
-        <div className="space-y-1.5">
-          <label className="text-xs text-[#888] uppercase tracking-widest">
+        <div style={styles.section}>
+          <label style={styles.label}>
             Job Description / Company Context
           </label>
           <Textarea
@@ -232,20 +207,19 @@ Each under 200 words.
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             rows={8}
-            className="w-full border border-[#2a2a2a] bg-[#161616] px-3 py-2.5 text-sm placeholder:text-[#444] focus:border-[#f5a623] focus:outline-none resize-y"
+            style={styles.textarea}
           />
         </div>
 
-        {/* Template + Generate */}
-        <div className="flex gap-3">
+        <div style={styles.controls}>
           <Select
             value={selectedTemplate}
             onValueChange={(v) => setSelectedTemplate(v as TemplateType)}
           >
-            <SelectTrigger className="bg-[#161616] border-[#2a2a2a] text-white text-sm rounded-none h-10 w-44 focus:border-[#f5a623]">
+            <SelectTrigger style={styles.selectTrigger}>
               <SelectValue placeholder="Style" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white rounded-none">
+            <SelectContent style={styles.selectContent}>
               <SelectItem value="concise">Concise</SelectItem>
               <SelectItem value="technical">Technical</SelectItem>
               <SelectItem value="story">Story Driven</SelectItem>
@@ -255,30 +229,33 @@ Each under 200 words.
 
           <Button
             onClick={generateColdMails}
-            disabled={loading  || !jobDescription }
-            className="flex-1 h-10 rounded-none bg-[#f5a623] hover:bg-[#e09510] text-black font-bold text-sm uppercase disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={loading || !jobDescription}
+            style={{
+              ...styles.generateButton,
+              opacity: loading || !jobDescription ? 0.4 : 1,
+              cursor: loading || !jobDescription ? 'not-allowed' : 'pointer'
+            }}
           >
             {loading ? "Generating..." : "Generate 3 ColdMails →"}
           </Button>
         </div>
 
-        {/* Results */}
         {responses.length > 0 && (
-          <div className="space-y-4 pt-4 border-t border-[#2a2a2a]">
+          <div style={styles.resultsSection}>
             {responses.map((res, i) => (
-              <div key={i} className="border border-[#2a2a2a] bg-[#111]">
-                <div className="flex justify-between px-4 py-2 border-b border-[#2a2a2a] bg-[#181818]">
-                  <span className="text-xs text-[#f5a623] font-bold uppercase">
+              <div key={i} style={styles.resultCard}>
+                <div style={styles.resultHeader}>
+                  <span style={styles.versionLabel}>
                     Version {i + 1}
                   </span>
                   <button
                     onClick={() => copyToClipboard(res, i)}
-                    className="text-xs text-[#888] hover:text-white"
+                    style={styles.copyButton}
                   >
                     {copied === i ? "✓ copied" : "copy"}
                   </button>
                 </div>
-                <pre className="px-5 py-4 text-sm whitespace-pre-wrap break-words leading-relaxed max-h-[520px] overflow-auto">
+                <pre style={styles.resultText}>
                   {res.trim()}
                 </pre>
               </div>
@@ -289,3 +266,149 @@ Each under 200 words.
     </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  main: {
+    minHeight: '100vh',
+    width: '100%',
+    backgroundColor: '#0e0e0e',
+    color: '#e8e6e0',
+    fontFamily: 'monospace',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '24px 24px',
+  },
+  container: {
+    width: '100%',
+    maxWidth: '42rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    letterSpacing: '-0.02em',
+    color: 'white',
+  },
+  titleAccent: {
+    color: '#f5a623',
+  },
+  subtitle: {
+    fontSize: '12px',
+    color: '#888',
+    marginTop: '4px',
+  },
+  editButton: {
+    fontSize: '12px',
+    color: '#999',
+    textDecoration: 'underline',
+    textDecorationOffset: '4px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+  },
+  section: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  label: {
+    fontSize: '12px',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  textarea: {
+    width: '100%',
+    border: '1px solid #2a2a2a',
+    backgroundColor: '#161616',
+    padding: '10px 12px',
+    fontSize: '14px',
+    color: 'white',
+    fontFamily: 'monospace',
+    minHeight: '128px',
+    resize: 'vertical',
+  },
+  controls: {
+    display: 'flex',
+    gap: '12px',
+  },
+  selectTrigger: {
+    backgroundColor: '#161616',
+    borderColor: '#2a2a2a',
+    color: 'white',
+    fontSize: '14px',
+    borderRadius: 0,
+    height: '40px',
+    width: '176px',
+  },
+  selectContent: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#2a2a2a',
+    color: 'white',
+    borderRadius: 0,
+  },
+  generateButton: {
+    flex: 1,
+    height: '40px',
+    borderRadius: 0,
+    backgroundColor: '#f5a623',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    textTransform: 'uppercase',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  resultsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    paddingTop: '16px',
+    borderTop: '1px solid #2a2a2a',
+  },
+  resultCard: {
+    border: '1px solid #2a2a2a',
+    backgroundColor: '#111',
+  },
+  resultHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '8px 16px',
+    borderBottom: '1px solid #2a2a2a',
+    backgroundColor: '#181818',
+  },
+  versionLabel: {
+    fontSize: '12px',
+    color: '#f5a623',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  copyButton: {
+    fontSize: '12px',
+    color: '#888',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+  },
+  resultText: {
+    padding: '20px',
+    fontSize: '14px',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    lineHeight: 1.6,
+    maxHeight: '520px',
+    overflow: 'auto',
+    color: '#e8e6e0',
+  },
+};
